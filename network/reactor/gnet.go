@@ -26,18 +26,23 @@ func (cs *cacheServer) OnInitComplete(srv gnet.Server) (action gnet.Action) {
 	return
 }
 func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
-	frameData := append([]byte{}, c.ReadFrame()...)
-	if len(frameData) == 0 {
-		fmt.Println("Not enough data")
-		return
+	for{
+		data :=  c.ReadFrame()
+		if len(data) == 0 {
+			return
+		}
+		err := cs.workerPool.Submit(func() {
+			frameData := append([]byte{},data...)
+			request := &pbmessages.Request{}
+			err := proto.Unmarshal(frameData, request)
+			sniffError(err)
+			responseBuffer := cs.processRequest(request)
+			c.AsyncWrite(responseBuffer)
+		})
+		if err != nil{
+			panic(err)
+		}
 	}
-	_ = cs.workerPool.Submit(func() {
-		request := &pbmessages.Request{}
-		err := proto.Unmarshal(frameData, request)
-		sniffError(err)
-		responseBuffer := cs.processRequest(request)
-		c.AsyncWrite(responseBuffer)
-	})
 	return
 }
 func sniffError(err error) {
