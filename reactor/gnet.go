@@ -1,7 +1,6 @@
 package reactor
 
 import (
-	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/panjf2000/gnet"
 	"github.com/panjf2000/gnet/pool"
@@ -32,7 +31,6 @@ func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
 	}
 	frameData = append([]byte{}, frameData...)
 	_ = cs.workerPool.Submit(func() {
-
 		request := &pbmessages.Request{}
 		err := proto.Unmarshal(frameData, request)
 		sniffError(err)
@@ -42,8 +40,3 @@ func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
 	return
 }
 
-func sniffError(err error) {
-	if err != nil{
-		fmt.Println(err)
-	}
-}

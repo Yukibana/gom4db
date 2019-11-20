@@ -5,13 +5,15 @@ import (
 	"gom4db/net"
 	"gom4db/reactor"
 )
+
 var gnet bool
+
 func main() {
-	flag.BoolVar(&gnet,"g",false,"Use gnet or not")
-	if gnet{
+	flag.BoolVar(&gnet, "g", false, "Use gnet or not")
+	if gnet {
 		reactor.Serve()
-	}else {
-		server :=  net.New()
+	} else {
+		server := net.New()
 		server.Listen()
 	}
 }

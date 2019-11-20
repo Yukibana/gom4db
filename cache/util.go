@@ -90,8 +90,8 @@ func SplitKeyName(key []byte) (string, string) {
 }
 
 func Str2bytes(s string) []byte {
-	if s == ""{
-		return  make([]byte,0)
+	if s == "" {
+		return make([]byte, 0)
 	}
 	ptr := (*[2]uintptr)(unsafe.Pointer(&s))
 	btr := [3]uintptr{ptr[0], ptr[1], ptr[1]}
