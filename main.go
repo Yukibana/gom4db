@@ -1,7 +1,17 @@
 package main
 
-import "gom4db/reactor"
-
+import (
+	"flag"
+	"gom4db/net"
+	"gom4db/reactor"
+)
+var gnet bool
 func main() {
-	reactor.Serve()
+	flag.BoolVar(&gnet,"g",false,"Use gnet or not")
+	if gnet{
+		reactor.Serve()
+	}else {
+		server :=  net.New()
+		server.Listen()
+	}
 }
