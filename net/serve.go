@@ -9,7 +9,7 @@ import (
 	"io"
 	"net"
 )
-func (cs *Server) serve(conn net.Conn) {
+func (s *Server) serve(conn net.Conn) {
 	defer conn.Close()
 	encoderConfig := goframe.EncoderConfig{
 		ByteOrder:                       binary.BigEndian,
@@ -39,7 +39,7 @@ func (cs *Server) serve(conn net.Conn) {
 		request := &cacheProtoc.Request{}
 		err = proto.Unmarshal(frameData, request)
 		sniffError(err)
-		responseBuffer := cs.processRequest(request)
+		responseBuffer := s.processRequest(request)
 		err = fc.WriteFrame(responseBuffer)
 		if err != nil{
 			sniffError(err)
@@ -55,6 +55,7 @@ func InvalidFormatResponse(re *cacheProtoc.UnifiedResponse)[]byte{
 	sniffError(err)
 	return responseBuffer
 }
+
 func sniffError(err error) {
 	if err != nil{
 		fmt.Println(err)
