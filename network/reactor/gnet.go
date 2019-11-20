@@ -26,11 +26,11 @@ func (cs *cacheServer) OnInitComplete(srv gnet.Server) (action gnet.Action) {
 	return
 }
 func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
-	frameData := c.ReadFrame()
-	if frameData == nil {
+	frameData := append([]byte{}, c.ReadFrame()...)
+	if len(frameData) == 0 {
+		fmt.Println("Not enough data")
 		return
 	}
-	frameData = append([]byte{}, frameData...)
 	_ = cs.workerPool.Submit(func() {
 		request := &pbmessages.Request{}
 		err := proto.Unmarshal(frameData, request)

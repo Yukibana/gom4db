@@ -10,10 +10,10 @@ var gnet bool
 
 func main() {
 	flag.BoolVar(&gnet, "g", false, "Use gnet or not")
-	if gnet {
+	flag.Parse()
+	if gnet{
 		reactor.Serve()
 	} else {
-		server := gonet.New()
-		server.Listen()
+		gonet.New().Listen()
 	}
 }
