@@ -2,8 +2,8 @@ package main
 
 import (
 	"flag"
-	"gom4db/net"
-	"gom4db/reactor"
+	"gom4db/network/gonet"
+	"gom4db/network/reactor"
 )
 
 var gnet bool
@@ -13,7 +13,7 @@ func main() {
 	if gnet {
 		reactor.Serve()
 	} else {
-		server := net.New()
+		server := gonet.New()
 		server.Listen()
 	}
 }

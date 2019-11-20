@@ -2,17 +2,18 @@ package reactor
 
 import (
 	"gom4db/pbmessages"
+	"gom4db/service"
 )
 
 func (cs *cacheServer) processRequest(request *pbmessages.Request) (responseBuffer []byte) {
 	switch request.GetType() {
 	case pbmessages.REQUEST_MSG_Get_Request:
-		return processGetRequest(request, cs.cache)
+		return service.ProcessGetRequest(request, cs.cache)
 	case pbmessages.REQUEST_MSG_Set_Request:
-		return processSetRequest(request, cs.cache)
+		return service.ProcessSetRequest(request, cs.cache)
 	case pbmessages.REQUEST_MSG_Del_Request:
-		return processDelRequest(request, cs.cache)
+		return service.ProcessDelRequest(request, cs.cache)
 	default:
-		return unrecognizedRequestResponse()
+		return service.UnrecognizedRequestResponse()
 	}
 }

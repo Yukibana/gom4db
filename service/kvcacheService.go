@@ -1,4 +1,4 @@
-package net
+package service
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"gom4db/pbmessages"
 )
 
-func unrecognizedRequestResponse() []byte {
+func UnrecognizedRequestResponse() []byte {
 	response := &pbmessages.UnifiedResponse{}
 	response.Type = pbmessages.RESPONSE_MSG_Unknown_Response
 	response.ErrorMsg = "error unsupported request type"
@@ -17,7 +17,7 @@ func unrecognizedRequestResponse() []byte {
 	return responseBuffer
 }
 
-func processGetRequest(request *pbmessages.Request, c cache.KeyValueCache) (responseBuffer []byte) {
+func ProcessGetRequest(request *pbmessages.Request, c cache.KeyValueCache) (responseBuffer []byte) {
 	response := &pbmessages.UnifiedResponse{}
 	var key string
 	if getRequest := request.GetGetRequest(); getRequest != nil {
@@ -39,7 +39,7 @@ func processGetRequest(request *pbmessages.Request, c cache.KeyValueCache) (resp
 	return responseBuffer
 }
 
-func processSetRequest(request *pbmessages.Request, c cache.KeyValueCache) (responseBuffer []byte) {
+func ProcessSetRequest(request *pbmessages.Request, c cache.KeyValueCache) (responseBuffer []byte) {
 	response := &pbmessages.UnifiedResponse{}
 	response.Type = pbmessages.RESPONSE_MSG_Set_Response
 	var key, value string
@@ -59,7 +59,7 @@ func processSetRequest(request *pbmessages.Request, c cache.KeyValueCache) (resp
 	return responseBuffer
 }
 
-func processDelRequest(request *pbmessages.Request, c cache.KeyValueCache) (responseBuffer []byte) {
+func ProcessDelRequest(request *pbmessages.Request, c cache.KeyValueCache) (responseBuffer []byte) {
 	response := &pbmessages.UnifiedResponse{}
 	response.Type = pbmessages.RESPONSE_MSG_Del_Response
 	var key string

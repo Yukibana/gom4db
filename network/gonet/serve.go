@@ -1,7 +1,8 @@
-package net
+package gonet
 
 import (
 	"encoding/binary"
+	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/smallnest/goframe"
 	"gom4db/pbmessages"
@@ -45,5 +46,10 @@ func (s *Server) serve(conn net.Conn) {
 			sniffError(err)
 			return
 		}
+	}
+}
+func sniffError(err error) {
+	if err != nil {
+		fmt.Println(err)
 	}
 }
