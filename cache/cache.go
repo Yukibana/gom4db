@@ -1,14 +1,23 @@
 package cache
 
-type Cache interface {
-	Set(string, []byte) error
-	Get(string) ([]byte, error)
-	Del(string) error
-	GetStat() Stat
+type KeyValueCache interface {
+	Get(key string) ([]byte, error)
+	Set(key string, val []byte) error
+	Del(key string) error
+	GetStat() KeyValueCacheStat
+}
+type KeyValueCacheStat struct {
 }
 
-func NewCache()Cache{
-	rdb := NewRocksDB("./rocks_data")
-	db :=  NewDb(rdb,100)
-	return db
+type HashMapCache interface {
+}
+type ListCache interface {
+}
+type SortedSetCache interface {
+}
+type Cache interface {
+	KeyValueCache
+	HashMapCache
+	ListCache
+	SortedSetCache
 }
