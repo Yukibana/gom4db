@@ -1,10 +1,11 @@
-package net
+package gonet
 
 import (
 	"fmt"
 	"gom4db/cache"
 	"net"
 )
+
 type Server struct {
 	cache cache.KeyValueCache
 }
@@ -26,4 +27,3 @@ func New() *Server {
 	fmt.Println("Start Tcp Server without gnet")
 	return &Server{cache.NewKeyValueCache()}
 }
-

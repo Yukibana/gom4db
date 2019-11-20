@@ -32,7 +32,6 @@ func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
 	}
 	frameData = append([]byte{}, frameData...)
 	_ = cs.workerPool.Submit(func() {
-
 		request := &pbmessages.Request{}
 		err := proto.Unmarshal(frameData, request)
 		sniffError(err)
@@ -41,9 +40,8 @@ func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
 	})
 	return
 }
-
 func sniffError(err error) {
-	if err != nil{
+	if err != nil {
 		fmt.Println(err)
 	}
 }

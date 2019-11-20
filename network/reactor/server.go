@@ -33,7 +33,7 @@ func Serve() {
 		InitialBytesToStrip: 4,
 	}
 	codec := gnet.NewLengthFieldBasedFrameCodec(encoderConfig, decoderConfig)
-	cs := &cacheServer{addr: addr, multiCore: multiCore, async: true, codec: codec, workerPool: pool.NewWorkerPool(),cache:cache.NewKeyValueCache()}
+	cs := &cacheServer{addr: addr, multiCore: multiCore, async: true, codec: codec, workerPool: pool.NewWorkerPool(), cache: cache.NewKeyValueCache()}
 
 	err := gnet.Serve(cs, addr, gnet.WithMulticore(multiCore), gnet.WithTCPKeepAlive(time.Minute*5), gnet.WithCodec(codec))
 	if err != nil {

@@ -1,13 +1,15 @@
-package net
+package gonet
 
 import (
 	"encoding/binary"
+	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/smallnest/goframe"
 	"gom4db/pbmessages"
 	"io"
 	"net"
 )
+
 func (s *Server) serve(conn net.Conn) {
 	defer conn.Close()
 	encoderConfig := goframe.EncoderConfig{
@@ -26,12 +28,12 @@ func (s *Server) serve(conn net.Conn) {
 	}
 	fc := goframe.NewLengthFieldBasedFrameConn(encoderConfig, decoderConfig, conn)
 
-	for{
-		frameData,err := fc.ReadFrame()
-		if err != nil{
-			if err == io.EOF{
+	for {
+		frameData, err := fc.ReadFrame()
+		if err != nil {
+			if err == io.EOF {
 				return
-			}else {
+			} else {
 				panic(err)
 			}
 		}
@@ -40,9 +42,14 @@ func (s *Server) serve(conn net.Conn) {
 		sniffError(err)
 		responseBuffer := s.processRequest(request)
 		err = fc.WriteFrame(responseBuffer)
-		if err != nil{
+		if err != nil {
 			sniffError(err)
 			return
 		}
+	}
+}
+func sniffError(err error) {
+	if err != nil {
+		fmt.Println(err)
 	}
 }
