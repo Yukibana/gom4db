@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package  cacheProtoc;
+package  pbmessages;
 enum REQUEST_MSG {
    Get_Request = 0;
    Set_Request = 1;

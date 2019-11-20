@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"gom4db/cache"
-	"gom4db/cacheProtoc"
+	"gom4db/pbmessages"
 )
 
-func (s *Server)processRequest(request *cacheProtoc.Request)(responseBuffer []byte){
+func (s *Server)processRequest(request *pbmessages.Request)(responseBuffer []byte){
 	switch request.GetType() {
-	case cacheProtoc.REQUEST_MSG_Get_Request:
+	case pbmessages.REQUEST_MSG_Get_Request:
 		return s.processGetRequest(request)
-	case cacheProtoc.REQUEST_MSG_Set_Request:
+	case pbmessages.REQUEST_MSG_Set_Request:
 		return s.processSetRequest(request)
-	case cacheProtoc.REQUEST_MSG_Del_Request:
+	case pbmessages.REQUEST_MSG_Del_Request:
 		return s.processDelRequest(request)
 	default:
 		return s.UnrecognizedRequestResponse()
@@ -21,8 +21,8 @@ func (s *Server)processRequest(request *cacheProtoc.Request)(responseBuffer []by
 }
 
 func  (s *Server) UnrecognizedRequestResponse()[]byte{
-	response := &cacheProtoc.UnifiedResponse{}
-	response.Type = cacheProtoc.RESPONSE_MSG_Unknown_Response;
+	response := &pbmessages.UnifiedResponse{}
+	response.Type = pbmessages.RESPONSE_MSG_Unknown_Response;
 	response.ErrorMsg = "error unsupported request type"
 	response.Error = true
 	responseBuffer, err := proto.Marshal(response)
@@ -30,8 +30,8 @@ func  (s *Server) UnrecognizedRequestResponse()[]byte{
 	return responseBuffer
 }
 
-func(s *Server)processGetRequest(request *cacheProtoc.Request)(responseBuffer []byte){
-	response := &cacheProtoc.UnifiedResponse{}
+func(s *Server)processGetRequest(request *pbmessages.Request)(responseBuffer []byte){
+	response := &pbmessages.UnifiedResponse{}
 	var key string
 	if getRequest := request.GetGetRequest();getRequest != nil{
 		key = getRequest.GetKey()
@@ -53,9 +53,9 @@ func(s *Server)processGetRequest(request *cacheProtoc.Request)(responseBuffer []
 }
 
 
-func(s *Server)processSetRequest(request *cacheProtoc.Request)(responseBuffer []byte){
-	response := &cacheProtoc.UnifiedResponse{}
-	response.Type = cacheProtoc.RESPONSE_MSG_Set_Response
+func(s *Server)processSetRequest(request *pbmessages.Request)(responseBuffer []byte){
+	response := &pbmessages.UnifiedResponse{}
+	response.Type = pbmessages.RESPONSE_MSG_Set_Response
 	var key,value string
 	if setRequest := request.GetSetRequest();setRequest != nil{
 		key = setRequest.GetKey()
@@ -74,9 +74,9 @@ func(s *Server)processSetRequest(request *cacheProtoc.Request)(responseBuffer []
 }
 
 
-func(s *Server)processDelRequest(request *cacheProtoc.Request)(responseBuffer []byte){
-	response := &cacheProtoc.UnifiedResponse{}
-	response.Type = cacheProtoc.RESPONSE_MSG_Del_Response
+func(s *Server)processDelRequest(request *pbmessages.Request)(responseBuffer []byte){
+	response := &pbmessages.UnifiedResponse{}
+	response.Type = pbmessages.RESPONSE_MSG_Del_Response
 	var key string
 	if delRequest := request.GetDelRequest(); delRequest != nil{
 		key = delRequest.GetKey()
@@ -91,4 +91,18 @@ func(s *Server)processDelRequest(request *cacheProtoc.Request)(responseBuffer []
 	responseBuffer, err = proto.Marshal(response)
 	sniffError(err)
 	return responseBuffer
+}
+
+func InvalidFormatResponse(re *pbmessages.UnifiedResponse)[]byte{
+	re.Error = true
+	re.ErrorMsg = "Invalid Format"
+	responseBuffer, err := proto.Marshal(re)
+	sniffError(err)
+	return responseBuffer
+}
+
+func sniffError(err error) {
+	if err != nil{
+		fmt.Println(err)
+	}
 }

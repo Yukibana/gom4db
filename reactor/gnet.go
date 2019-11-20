@@ -6,7 +6,7 @@ import (
 	"github.com/panjf2000/gnet"
 	"github.com/panjf2000/gnet/pool"
 	"gom4db/cache"
-	"gom4db/cacheProtoc"
+	"gom4db/pbmessages"
 	"log"
 )
 
@@ -33,7 +33,7 @@ func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
 	frameData = append([]byte{}, frameData...)
 	_ = cs.workerPool.Submit(func() {
 
-		request := &cacheProtoc.Request{}
+		request := &pbmessages.Request{}
 		err := proto.Unmarshal(frameData, request)
 		sniffError(err)
 		responseBuffer := cs.processRequest(request)

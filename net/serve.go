@@ -2,10 +2,9 @@ package net
 
 import (
 	"encoding/binary"
-	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/smallnest/goframe"
-	"gom4db/cacheProtoc"
+	"gom4db/pbmessages"
 	"io"
 	"net"
 )
@@ -36,7 +35,7 @@ func (s *Server) serve(conn net.Conn) {
 				panic(err)
 			}
 		}
-		request := &cacheProtoc.Request{}
+		request := &pbmessages.Request{}
 		err = proto.Unmarshal(frameData, request)
 		sniffError(err)
 		responseBuffer := s.processRequest(request)
@@ -45,19 +44,5 @@ func (s *Server) serve(conn net.Conn) {
 			sniffError(err)
 			return
 		}
-	}
-}
-
-func InvalidFormatResponse(re *cacheProtoc.UnifiedResponse)[]byte{
-	re.Error = true
-	re.ErrorMsg = "Invalid Format"
-	responseBuffer, err := proto.Marshal(re)
-	sniffError(err)
-	return responseBuffer
-}
-
-func sniffError(err error) {
-	if err != nil{
-		fmt.Println(err)
 	}
 }
