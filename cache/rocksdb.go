@@ -46,7 +46,21 @@ func (d *DB) RawSet(key, value []byte) error {
 func (d *DB) RawDelete(key []byte) error {
 	return d.rdb.Delete(d.wo, key)
 }
-
+func (d *DB) Get(key string) ([]byte, error) {
+	keyBytes := Str2bytes(key)
+	return d.RawGet(rawKey(keyBytes, STRING))
+}
+func (d *DB) Set(key string, value []byte) error {
+	keyBytes := Str2bytes(key)
+	return d.RawSet(rawKey(keyBytes, STRING), value)
+}
+func (d *DB) Del(key string) error {
+	keyBytes := Str2bytes(key)
+	return d.RawDelete(keyBytes)
+}
+func (d DB) GetStat() KeyValueCacheStat {
+	return KeyValueCacheStat{}
+}
 func (d *DB) Close() {
 	d.wo.Destroy()
 	d.ro.Destroy()
