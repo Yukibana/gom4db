@@ -31,7 +31,9 @@ func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
 		if len(data) == 0 {
 			return
 		}
+		// capture iterate
 		err := cs.workerPool.Submit(func() {
+
 			frameData := append([]byte{},data...)
 			request := &pbmessages.Request{}
 			err := proto.Unmarshal(frameData, request)

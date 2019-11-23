@@ -11,6 +11,7 @@ type Server struct {
 }
 
 func (s *Server) Listen() {
+	defer s.cache.Close()
 	l, e := net.Listen("tcp", ":12347")
 	if e != nil {
 		panic(e)

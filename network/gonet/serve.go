@@ -1,6 +1,7 @@
 package gonet
 
 import (
+	"container/heap"
 	"encoding/binary"
 	"fmt"
 	"github.com/golang/protobuf/proto"
@@ -11,7 +12,6 @@ import (
 )
 
 func (s *Server) serve(conn net.Conn) {
-	defer conn.Close()
 	encoderConfig := goframe.EncoderConfig{
 		ByteOrder:                       binary.BigEndian,
 		LengthFieldLength:               4,
@@ -27,7 +27,11 @@ func (s *Server) serve(conn net.Conn) {
 		InitialBytesToStrip: 4,
 	}
 	fc := goframe.NewLengthFieldBasedFrameConn(encoderConfig, decoderConfig, conn)
+	defer fc.Close()
+	responseChan := make(chan response,1000)
+	go s.WriteFrameDaemon(responseChan,fc)
 
+	sequenceNr := 0
 	for {
 		frameData, err := fc.ReadFrame()
 		if err != nil {
@@ -37,14 +41,52 @@ func (s *Server) serve(conn net.Conn) {
 				panic(err)
 			}
 		}
-		request := &pbmessages.Request{}
-		err = proto.Unmarshal(frameData, request)
-		sniffError(err)
-		responseBuffer := s.processRequest(request)
-		err = fc.WriteFrame(responseBuffer)
-		if err != nil {
-			sniffError(err)
-			return
+		go s.AsyncProcessRequest(frameData,sequenceNr,responseChan)
+		sequenceNr++
+	}
+}
+func (s *Server)AsyncProcessRequest(frameData []byte,seq int,ch chan response){
+	request := &pbmessages.Request{}
+	err := proto.Unmarshal(frameData, request)
+	sniffError(err)
+	responseBuffer := s.processRequest(request)
+	ch <- response{
+		body:  responseBuffer,
+		order: seq,
+	}
+}
+func (s *Server)WriteFrameDaemon(ch chan response,fc goframe.FrameConn){
+	var responseHeap = new(ResponseHeap)
+	heap.Init(responseHeap)
+
+	currentOrder := 0
+	for{
+		newResponse := <- ch
+		if newResponse.order == currentOrder{
+			err := fc.WriteFrame(newResponse.body)
+			if err != nil {
+				sniffError(err)
+				return
+			}
+			currentOrder ++
+		}else {
+			heap.Push(responseHeap,newResponse)
+			continue
+		}
+		for{
+			if responseHeap.IsEmpty(){
+				break;
+			}
+			if responseHeap.Top() == currentOrder{
+				err := fc.WriteFrame(responseHeap.Pop().(response).body)
+				if err != nil {
+					sniffError(err)
+					return
+				}
+				currentOrder ++
+			}else {
+				break
+			}
 		}
 	}
 }
