@@ -19,13 +19,17 @@ type batchConfig struct {
 type setCommand struct {
 	key,value []byte
 }
+// user can choose to use async write or not
 func (c *kvcache) Set(key string, value []byte) error {
+	keyBytes := Str2bytes(key)
+	return c.RawSet(keyBytes,value)
+}
+func (c *kvcache) AsyncSet(key string, value []byte){
 	keyBytes := Str2bytes(key)
 	c.setCommands <- setCommand{
 		key:   keyBytes,
 		value: value,
 	}
-	return  nil
 }
 func (c *kvcache)ModWriteConfig(newDelay time.Duration,newMaxBatchNum int){
 	newConfig := batchConfig{
