@@ -78,7 +78,8 @@ func (s *Server)WriteFrameDaemon(ch chan response,fc goframe.FrameConn){
 				break;
 			}
 			if responseHeap.Top() == currentOrder{
-				err := fc.WriteFrame(responseHeap.Pop().(response).body)
+				popResp := heap.Pop(responseHeap).(response)
+				err := fc.WriteFrame(popResp.body)
 				if err != nil {
 					sniffError(err)
 					return

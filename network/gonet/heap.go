@@ -7,7 +7,6 @@ type response struct {
 
 // An ResponseHeap is a min-heap of integers.
 type ResponseHeap []response
-
 func (h ResponseHeap) Len() int {
 	return len(h)
 }
@@ -29,9 +28,7 @@ func (h *ResponseHeap) Pop() interface{} {
 	*h = old[0 : n-1]
 	return x
 }
-
 func (h ResponseHeap) Top() (order int) {
-
 	x := h[0].order
 	return x
 }
