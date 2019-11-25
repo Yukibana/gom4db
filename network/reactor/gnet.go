@@ -1,6 +1,7 @@
 package reactor
 
 import (
+	"container/heap"
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/panjf2000/gnet"
@@ -18,8 +19,10 @@ type cacheServer struct {
 	codec      gnet.ICodec
 	workerPool *pool.WorkerPool
 	cache      cache.KeyValueCache
-	ch         chan response
+}
+type cacheContext struct {
 	order int
+	ch    chan response
 }
 
 func (cs *cacheServer) OnInitComplete(srv gnet.Server) (action gnet.Action) {
@@ -28,8 +31,38 @@ func (cs *cacheServer) OnInitComplete(srv gnet.Server) (action gnet.Action) {
 	return
 }
 func (cs *cacheServer) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
-	cs.ch = make(chan response,100)
+	newContext := cacheContext{
+		order: 0,
+		ch:    make(chan response, 100),
+	}
+	c.SetContext(&newContext)
 	err := cs.workerPool.Submit(func() {
+		var responseHeap = new(ResponseHeap)
+		heap.Init(responseHeap)
+		ctx := c.Context().(*cacheContext)
+		currentOrder := 0
+		for {
+			newResponse := <-ctx.ch
+			if newResponse.order == currentOrder {
+				c.AsyncWrite(newResponse.body)
+				currentOrder++
+			} else {
+				heap.Push(responseHeap, newResponse)
+				continue
+			}
+			for {
+				if responseHeap.IsEmpty() {
+					break
+				}
+				if responseHeap.Top() == currentOrder {
+					popResp := heap.Pop(responseHeap).(response)
+					c.AsyncWrite(popResp.body)
+					currentOrder++
+				} else {
+					break
+				}
+			}
+		}
 
 	})
 	if err != nil {
@@ -38,24 +71,26 @@ func (cs *cacheServer) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
 	return
 }
 func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
+	ctx := c.Context().(*cacheContext)
 	for {
 		data := c.ReadFrame()
 		if len(data) == 0 {
 			return
 		}
-		// capture iterate
+		// a simple concurrent programming problem
+		// but I haven't done it for a long time
+		order := ctx.order
+		ctx.order++
 		err := cs.workerPool.Submit(func() {
-
 			frameData := append([]byte{}, data...)
 			request := &pbmessages.Request{}
 			err := proto.Unmarshal(frameData, request)
 			sniffError(err)
 			responseBuffer := cs.processRequest(request)
-			cs.ch <- response{
+			ctx.ch <- response{
 				body:  responseBuffer,
-				order: cs.order,
+				order: order,
 			}
-			c.AsyncWrite(responseBuffer)
 		})
 		if err != nil {
 			panic(err)
