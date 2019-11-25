@@ -4,6 +4,7 @@ import (
 	"gom4db/pbmessages"
 	"gom4db/service"
 )
+
 func (s *Server) processRequest(request *pbmessages.Request) (responseBuffer []byte) {
 	switch request.GetType() {
 	case pbmessages.REQUEST_MSG_Get_Request:

@@ -5,41 +5,42 @@ import (
 	"time"
 )
 
-// We can call it a extension of db 
+// We can call it a extension of db
 type kvcache struct {
 	*DB
 	batchModChan chan batchConfig
 	setCommands  chan setCommand
 }
 type batchConfig struct {
-	delay time.Duration
-	maxBatchNum  int
-	stop bool
+	delay       time.Duration
+	maxBatchNum int
+	stop        bool
 }
 type setCommand struct {
-	key,value []byte
+	key, value []byte
 }
+
 // user can choose to use async write or not
 func (c *kvcache) Set(key string, value []byte) error {
 	keyBytes := Str2bytes(key)
-	return c.RawSet(keyBytes,value)
+	return c.RawSet(keyBytes, value)
 }
-func (c *kvcache) AsyncSet(key string, value []byte){
+func (c *kvcache) AsyncSet(key string, value []byte) {
 	keyBytes := Str2bytes(key)
 	c.setCommands <- setCommand{
 		key:   keyBytes,
 		value: value,
 	}
 }
-func (c *kvcache)ModWriteConfig(newDelay time.Duration,newMaxBatchNum int){
+func (c *kvcache) ModWriteConfig(newDelay time.Duration, newMaxBatchNum int) {
 	newConfig := batchConfig{
 		delay:       newDelay,
 		maxBatchNum: newMaxBatchNum,
 	}
 	c.batchModChan <- newConfig
-	return 
+	return
 }
-func (c *kvcache)Close(){
+func (c *kvcache) Close() {
 	stopConfig := batchConfig{
 		stop: true,
 	}
@@ -47,12 +48,12 @@ func (c *kvcache)Close(){
 	c.DB.Close()
 }
 
-func (c *kvcache) BatchDaemon(initConfig batchConfig){
+func (c *kvcache) BatchDaemon(initConfig batchConfig) {
 	batch := gorocksdb.NewWriteBatch()
 	defer batch.Destroy()
-	
+
 	localConfig := initConfig
-	for{
+	for {
 		select {
 		case <-time.After(localConfig.delay):
 			err := c.WriteBatch(batch)
@@ -61,15 +62,15 @@ func (c *kvcache) BatchDaemon(initConfig batchConfig){
 				return
 			}
 			batch.Clear()
-		case newConfig := <- c.batchModChan:
+		case newConfig := <-c.batchModChan:
 			err := c.WriteBatch(batch)
 			if err != nil {
 				return
 			}
 			batch.Clear()
 			localConfig = newConfig
-		case newSetCommand := <- c.setCommands:
-			batch.Put(newSetCommand.key,newSetCommand.value)
+		case newSetCommand := <-c.setCommands:
+			batch.Put(newSetCommand.key, newSetCommand.value)
 		}
 	}
 }
@@ -79,15 +80,14 @@ func NewKeyValueCache() KeyValueCache {
 	db := NewDb(rocksDb)
 	cache := &kvcache{
 		DB:           db,
-		batchModChan: make(chan batchConfig,1),
-		setCommands:  make(chan setCommand,1000),
+		batchModChan: make(chan batchConfig, 1),
+		setCommands:  make(chan setCommand, 1000),
 	}
 
 	initBatchConfig := batchConfig{
-		delay:       time.Second*2,
+		delay:       time.Second * 2,
 		maxBatchNum: 1000,
 	}
 	go cache.BatchDaemon(initBatchConfig)
 	return cache
 }
-

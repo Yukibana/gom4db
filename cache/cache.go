@@ -3,7 +3,7 @@ package cache
 type KeyValueCache interface {
 	Get(key string) ([]byte, error)
 	Set(key string, val []byte) error
-	AsyncSet(string,[]byte)
+	AsyncSet(string, []byte)
 	Del(key string) error
 	Close()
 	GetStat() KeyValueCacheStat

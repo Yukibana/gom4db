@@ -1,4 +1,4 @@
-package gonet
+package reactor
 
 type response struct {
 	body  []byte

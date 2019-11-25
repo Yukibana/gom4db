@@ -3,6 +3,7 @@ package gonet
 import (
 	"math/rand"
 )
+
 const zSkipListMaxLevel = 32
 
 type (

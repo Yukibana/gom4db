@@ -9,11 +9,12 @@ import (
 	"container/heap"
 	"testing"
 )
+
 var h *ResponseHeap
-func init(){
+
+func init() {
 	h = new(ResponseHeap)
 	heap.Init(h)
 }
-func TestAll(t *testing.T){
+func TestAll(t *testing.T) {
 }
-

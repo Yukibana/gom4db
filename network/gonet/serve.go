@@ -28,8 +28,8 @@ func (s *Server) serve(conn net.Conn) {
 	}
 	fc := goframe.NewLengthFieldBasedFrameConn(encoderConfig, decoderConfig, conn)
 	defer fc.Close()
-	responseChan := make(chan response,1000)
-	go s.WriteFrameDaemon(responseChan,fc)
+	responseChan := make(chan response, 1000)
+	go s.WriteFrameDaemon(responseChan, fc)
 
 	sequenceNr := 0
 	for {
@@ -41,11 +41,11 @@ func (s *Server) serve(conn net.Conn) {
 				panic(err)
 			}
 		}
-		go s.AsyncProcessRequest(frameData,sequenceNr,responseChan)
+		go s.AsyncProcessRequest(frameData, sequenceNr, responseChan)
 		sequenceNr++
 	}
 }
-func (s *Server)AsyncProcessRequest(frameData []byte,seq int,ch chan response){
+func (s *Server) AsyncProcessRequest(frameData []byte, seq int, ch chan response) {
 	request := &pbmessages.Request{}
 	err := proto.Unmarshal(frameData, request)
 	sniffError(err)
@@ -55,37 +55,37 @@ func (s *Server)AsyncProcessRequest(frameData []byte,seq int,ch chan response){
 		order: seq,
 	}
 }
-func (s *Server)WriteFrameDaemon(ch chan response,fc goframe.FrameConn){
+func (s *Server) WriteFrameDaemon(ch chan response, fc goframe.FrameConn) {
 	var responseHeap = new(ResponseHeap)
 	heap.Init(responseHeap)
 
 	currentOrder := 0
-	for{
-		newResponse := <- ch
-		if newResponse.order == currentOrder{
+	for {
+		newResponse := <-ch
+		if newResponse.order == currentOrder {
 			err := fc.WriteFrame(newResponse.body)
 			if err != nil {
 				sniffError(err)
 				return
 			}
-			currentOrder ++
-		}else {
-			heap.Push(responseHeap,newResponse)
+			currentOrder++
+		} else {
+			heap.Push(responseHeap, newResponse)
 			continue
 		}
-		for{
-			if responseHeap.IsEmpty(){
-				break;
+		for {
+			if responseHeap.IsEmpty() {
+				break
 			}
-			if responseHeap.Top() == currentOrder{
+			if responseHeap.Top() == currentOrder {
 				popResp := heap.Pop(responseHeap).(response)
 				err := fc.WriteFrame(popResp.body)
 				if err != nil {
 					sniffError(err)
 					return
 				}
-				currentOrder ++
-			}else {
+				currentOrder++
+			} else {
 				break
 			}
 		}
