@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/panjf2000/gnet"
-	"github.com/panjf2000/gnet/pool"
+	"github.com/panjf2000/gnet/pool/goroutine"
 	"gom4db/cache"
 	"gom4db/pbmessages"
 	"log"
@@ -17,12 +17,12 @@ type cacheServer struct {
 	multiCore  bool
 	async      bool
 	codec      gnet.ICodec
-	workerPool *pool.WorkerPool
+	workerPool *goroutine.Pool
 	cache      cache.KeyValueCache
 }
 type cacheContext struct {
-	order int
-	ch    chan response
+	order     int
+	responses chan response
 }
 
 func (cs *cacheServer) OnInitComplete(srv gnet.Server) (action gnet.Action) {
@@ -32,8 +32,8 @@ func (cs *cacheServer) OnInitComplete(srv gnet.Server) (action gnet.Action) {
 }
 func (cs *cacheServer) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
 	newContext := cacheContext{
-		order: 0,
-		ch:    make(chan response, 100),
+		order:     0,
+		responses: make(chan response, 100),
 	}
 	c.SetContext(&newContext)
 	err := cs.workerPool.Submit(func() {
@@ -41,8 +41,7 @@ func (cs *cacheServer) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
 		heap.Init(responseHeap)
 		ctx := c.Context().(*cacheContext)
 		currentOrder := 0
-		for {
-			newResponse := <-ctx.ch
+		for newResponse := range ctx.responses{
 			if newResponse.order == currentOrder {
 				c.AsyncWrite(newResponse.body)
 				currentOrder++
@@ -70,6 +69,11 @@ func (cs *cacheServer) OnOpened(c gnet.Conn) (out []byte, action gnet.Action) {
 	}
 	return
 }
+func (cs *cacheServer)OnClosed(c gnet.Conn,err error)(action gnet.Action){
+	ctx := c.Context().(*cacheContext)
+	close(ctx.responses)
+	return
+}
 func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
 	ctx := c.Context().(*cacheContext)
 	for {
@@ -77,8 +81,6 @@ func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
 		if len(data) == 0 {
 			return
 		}
-		// a simple concurrent programming problem
-		// but I haven't done it for a long time
 		order := ctx.order
 		ctx.order++
 		err := cs.workerPool.Submit(func() {
@@ -87,7 +89,7 @@ func (cs *cacheServer) React(c gnet.Conn) (out []byte, action gnet.Action) {
 			err := proto.Unmarshal(frameData, request)
 			sniffError(err)
 			responseBuffer := cs.processRequest(request)
-			ctx.ch <- response{
+			ctx.responses <- response{
 				body:  responseBuffer,
 				order: order,
 			}

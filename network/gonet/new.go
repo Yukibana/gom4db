@@ -3,11 +3,13 @@ package gonet
 import (
 	"fmt"
 	"gom4db/cache"
+	"gom4db/network/cluster"
 	"net"
 )
 
 type Server struct {
 	cache cache.KeyValueCache
+	cluster.Node
 }
 
 func (s *Server) Listen() {
@@ -24,7 +26,7 @@ func (s *Server) Listen() {
 		go s.serve(c)
 	}
 }
-func New() *Server {
+func New(n cluster.Node) *Server {
 	fmt.Println("Start Tcp Server without gnet")
-	return &Server{cache.NewKeyValueCache()}
+	return &Server{cache.NewKeyValueCache(),n}
 }

@@ -49,12 +49,8 @@ func ProcessSetRequest(request *pbmessages.Request, c cache.KeyValueCache) (resp
 	} else {
 		return InvalidFormatResponse(response)
 	}
-	err := c.Set(key, cache.Str2bytes(value))
-	if err != nil {
-		response.Error = true
-		response.ErrorMsg = fmt.Sprintf("error occurs when set the key %s ", err.Error())
-	}
-	responseBuffer, err = proto.Marshal(response)
+	c.AsyncSet(key, cache.Str2bytes(value))
+	responseBuffer, err := proto.Marshal(response)
 	sniffError(err)
 	return responseBuffer
 }
