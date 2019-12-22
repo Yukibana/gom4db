@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/panjf2000/gnet"
-	"github.com/panjf2000/gnet/pool"
+	"github.com/panjf2000/gnet/pool/goroutine"
 	"gom4db/cache"
 	"time"
 )
@@ -14,7 +14,7 @@ func Serve() {
 	var port int
 	var multiCore bool
 	// Example command: go run server.go --port 9000 --multiCore true
-	flag.IntVar(&port, "port", 12347, "server port")
+	flag.IntVar(&port, "port", 12306, "server port")
 	flag.BoolVar(&multiCore, "multiCore", true, "multiCore")
 	flag.Parse()
 	addr := fmt.Sprintf("tcp://:%d", port)
@@ -33,7 +33,7 @@ func Serve() {
 		InitialBytesToStrip: 4,
 	}
 	codec := gnet.NewLengthFieldBasedFrameCodec(encoderConfig, decoderConfig)
-	cs := &cacheServer{addr: addr, multiCore: multiCore, async: true, codec: codec, workerPool: pool.NewWorkerPool(), cache: cache.NewKeyValueCache()}
+	cs := &cacheServer{addr: addr, multiCore: multiCore, async: true, codec: codec, cache: cache.NewKeyValueCache(),workerPool:goroutine.Default()}
 
 	err := gnet.Serve(cs, addr, gnet.WithMulticore(multiCore), gnet.WithTCPKeepAlive(time.Minute*5), gnet.WithCodec(codec))
 	if err != nil {

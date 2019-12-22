@@ -14,7 +14,8 @@ type Server struct {
 
 func (s *Server) Listen() {
 	defer s.cache.Close()
-	l, e := net.Listen("tcp", ":12347")
+	fmt.Println("Listening at tcp "+s.Addr()+":12347")
+	l, e := net.Listen("tcp", s.Addr()+":12347")
 	if e != nil {
 		panic(e)
 	}
@@ -27,6 +28,6 @@ func (s *Server) Listen() {
 	}
 }
 func New(n cluster.Node) *Server {
-	fmt.Println("Start Tcp Server without gnet")
+	fmt.Println("start tcp server in gonet mode")
 	return &Server{cache.NewKeyValueCache(),n}
 }

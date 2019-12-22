@@ -13,16 +13,13 @@ enum RESPONSE_MSG {
    Unknown_Response = 3;
 }
 message GetRequest {
-   string key = 1;
 }
 
 message SetRequest {
-   string key = 1;
-   string value = 2;
+   string value = 1;
 }
 
 message DelRequest {
-   string key = 1;
 }
 
 message Request {
@@ -30,6 +27,7 @@ message Request {
    GetRequest getRequest = 2;
    SetRequest setRequest = 3;
    DelRequest delRequest = 4;
+   string key = 5;
 }
 
 message UnifiedResponse {
@@ -37,4 +35,5 @@ message UnifiedResponse {
    bool error = 2;
    string errorMsg = 3;
    string value = 4;
+   string redirectDir = 5;
 }

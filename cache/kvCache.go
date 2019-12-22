@@ -21,10 +21,14 @@ type setCommand struct {
 }
 
 // user can choose to use async write or not
-func (c *kvcache) Set(key string, value []byte) error {
-	keyBytes := Str2bytes(key)
-	return c.RawSet(keyBytes, value)
-}
+//func (c *kvcache) Set(key string, value []byte) error {
+//	fmt.Println("Already set",key,"with",Bytes2str(value))
+//	keyBytes := Str2bytes(key)
+//	return c.RawSet(keyBytes, value)
+//}
+//func (c *kvcache)Get(){
+//
+//}
 func (c *kvcache) AsyncSet(key string, value []byte) {
 	keyBytes := Str2bytes(key)
 	c.setCommands <- setCommand{

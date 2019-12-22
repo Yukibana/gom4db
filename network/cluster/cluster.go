@@ -47,9 +47,6 @@ func New(addr, cluster string) (Node, error) {
 	circle := consistent.New()
 	circle.NumberOfReplicas = 256
 	go func() {
-		// so it is a kind of polling? fuck you , that's so funny. fuck fuck fuck
-		// if one node failed, the others won't get its addr, so the node list will
-		// be updated. That's kind of fault
 		for {
 			// get all members
 			m := l.Members()

@@ -6,6 +6,11 @@ import (
 )
 
 func (s *Server) processRequest(request *pbmessages.Request) (responseBuffer []byte) {
+	key := request.GetKey()
+	addr,ok := 	s.ShouldProcess(key)
+	if !ok{
+		return service.RedirectResponse(addr)
+	}
 	switch request.GetType() {
 	case pbmessages.REQUEST_MSG_Get_Request:
 		return service.ProcessGetRequest(request, s.cache)

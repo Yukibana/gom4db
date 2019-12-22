@@ -18,10 +18,11 @@ func UnrecognizedRequestResponse() []byte {
 }
 
 func ProcessGetRequest(request *pbmessages.Request, c cache.KeyValueCache) (responseBuffer []byte) {
+
 	response := &pbmessages.UnifiedResponse{}
 	var key string
 	if getRequest := request.GetGetRequest(); getRequest != nil {
-		key = getRequest.GetKey()
+		key = request.GetKey()
 	} else {
 		return InvalidFormatResponse(response)
 	}
@@ -44,12 +45,12 @@ func ProcessSetRequest(request *pbmessages.Request, c cache.KeyValueCache) (resp
 	response.Type = pbmessages.RESPONSE_MSG_Set_Response
 	var key, value string
 	if setRequest := request.GetSetRequest(); setRequest != nil {
-		key = setRequest.GetKey()
+		key = request.GetKey()
 		value = setRequest.GetValue()
 	} else {
 		return InvalidFormatResponse(response)
 	}
-	c.AsyncSet(key, cache.Str2bytes(value))
+	_ = c.Set(key, cache.Str2bytes(value))
 	responseBuffer, err := proto.Marshal(response)
 	sniffError(err)
 	return responseBuffer
@@ -60,7 +61,7 @@ func ProcessDelRequest(request *pbmessages.Request, c cache.KeyValueCache) (resp
 	response.Type = pbmessages.RESPONSE_MSG_Del_Response
 	var key string
 	if delRequest := request.GetDelRequest(); delRequest != nil {
-		key = delRequest.GetKey()
+		key = request.GetKey()
 	} else {
 		return InvalidFormatResponse(response)
 	}
@@ -86,4 +87,14 @@ func sniffError(err error) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+func RedirectResponse(addr string)[]byte{
+	re := &pbmessages.UnifiedResponse{
+		Error:                true,
+		ErrorMsg:             "redirect key",
+		RedirectDir:          addr,
+	}
+	responseBuffer, err := proto.Marshal(re)
+	sniffError(err)
+	return responseBuffer
 }

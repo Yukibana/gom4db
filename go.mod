@@ -10,7 +10,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9
 	github.com/golang/protobuf v1.3.2
 	github.com/hashicorp/memberlist v0.1.5
-	github.com/panjf2000/gnet v1.0.0-rc.3.0.20191213075709-47a3231b365b
+	github.com/panjf2000/gnet v1.0.0-rc.4.0.20191220104521-528b5a55b550
 	github.com/smallnest/goframe v0.0.0-20191101094441-1fbd8e51db18
 	github.com/stretchr/testify v1.4.0 // indirect
 	github.com/tecbot/gorocksdb v0.0.0-20191019123150-400c56251341
