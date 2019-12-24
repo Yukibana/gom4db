@@ -3,8 +3,6 @@ FROM gorocksdb
 
 ENV GOPROXY=https://goproxy.cn,direct
 ENV GO111MODULE=on
-ENV NODE="-node 127.0.0.1"
-ENV CLUSTER=""
 
 # memberlist port
 EXPOSE 7946
@@ -21,5 +19,5 @@ COPY . .
 
 RUN go build  -mod=vendor .
 
-ENTRYPOINT ["./gom4db","${NODE}","${CLUSTER}"]
+ENTRYPOINT ["./gom4db"]
 

@@ -1,0 +1,41 @@
+version: '2'
+services:
+  node1:
+    image: gom4db
+    container_name: node1
+    ports:
+      - 12347:12347
+      - 12345:12345
+    environment:
+      - NODE=172.19.0.2
+    networks:
+      cluster-network:
+        ipv4_address: 172.19.0.2
+  node2:
+    image: gom4db
+    container_name: node2
+    depends_on:
+      - node1
+    environment:
+      - CLUSTER=172.19.0.2
+      - NODE=172.19.0.3
+    networks:
+      cluster-network:
+        ipv4_address: 172.19.0.3
+  node3:
+    image: gom4db
+    container_name: node3
+    depends_on:
+      - node1
+    environment:
+      - CLUSTER=172.19.0.2
+      - NODE=172.19.0.4
+    networks:
+      cluster-network:
+        ipv4_address: 172.19.0.4
+networks:
+  cluster-network:
+    ipam:
+      config:
+        - subnet: 172.19.0.0/16
+          gateway: 172.19.0.1
