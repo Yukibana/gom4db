@@ -2,3 +2,5 @@
 rocks_data/*
 .DS_Store
 gom4db
+rocksdb
+vendor
