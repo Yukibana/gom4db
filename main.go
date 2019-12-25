@@ -48,8 +48,8 @@ func main() {
 	go http.New(n).Listen()
 
 	s := grpc.NewServer()
-	protobuf.RegisterCacheServiceServer(s,rpc.NewCacheService(n))
-	listener,err := net.Listen("tcp","0.0.0.0:12347")
+	protobuf.RegisterCacheServiceServer(s, rpc.NewCacheService(n))
+	listener, err := net.Listen("tcp", "0.0.0.0:12347")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

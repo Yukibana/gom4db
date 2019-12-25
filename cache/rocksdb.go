@@ -1,10 +1,9 @@
 package cache
 
 import (
-	"sync"
-
 	"github.com/golang/groupcache/lru"
 	"github.com/tecbot/gorocksdb"
+	"sync"
 )
 
 type DB struct {
@@ -18,7 +17,7 @@ type DB struct {
 func NewRocksDB(dir string) *gorocksdb.DB {
 	opts := gorocksdb.NewDefaultOptions()
 	opts.SetCreateIfMissing(true)
-	rdb, err := gorocksdb.OpenDb(opts, dir)
+	rdb, err := gorocksdb.OpenDbWithTTL(opts, dir, 60*5)
 	if err != nil {
 		panic(err)
 	}

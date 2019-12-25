@@ -19,38 +19,38 @@ type CacheServiceImpl struct {
 
 func (c *CacheServiceImpl) Get(ctx context.Context, pKey *protobuf.String) (req *protobuf.Response, err error) {
 	key := pKey.Value
-	addr,ok := c.ShouldProcess(key)
+	addr, ok := c.ShouldProcess(key)
 	req = new(protobuf.Response)
-	if !ok{
+	if !ok {
 		req.RedirectDir = addr
-		req.ErrorMsg = fmt.Sprintf("Redirct: %s",addr)
-		return req,nil
+		req.ErrorMsg = fmt.Sprintf("Redirct: %s", addr)
+		return req, nil
 	}
-	value,err := c.cache.Get(key)
+	value, err := c.cache.Get(key)
 
-	if value != nil{
+	if value != nil {
 		req.Ok = true
 		req.Value = cache.Bytes2str(value)
-	}else {
+	} else {
 		req.ErrorMsg = fmt.Sprintf("The value of key {%s} not found", key)
 	}
 	return
 }
 
-func (c *CacheServiceImpl) Set(ctx context.Context, param*protobuf.SetParam)(req *protobuf.Response, err error) {
+func (c *CacheServiceImpl) Set(ctx context.Context, param *protobuf.SetParam) (req *protobuf.Response, err error) {
 	key := param.Key
-	addr,ok := c.ShouldProcess(key)
+	addr, ok := c.ShouldProcess(key)
 	req = new(protobuf.Response)
-	if !ok{
-		req.ErrorMsg = fmt.Sprintf("Redirct: %s",addr)
+	if !ok {
+		req.ErrorMsg = fmt.Sprintf("Redirct: %s", addr)
 		req.RedirectDir = addr
-		return req,nil
+		return req, nil
 	}
 	value := param.Value
-	err = c.cache.Set(key,value)
-	if err != nil{
-		req.ErrorMsg = fmt.Sprintf("Err: %s",err)
-	}else {
+	err = c.cache.Set(key, value)
+	if err != nil {
+		req.ErrorMsg = fmt.Sprintf("Err: %s", err)
+	} else {
 		req.Ok = true
 	}
 	return
@@ -58,21 +58,21 @@ func (c *CacheServiceImpl) Set(ctx context.Context, param*protobuf.SetParam)(req
 
 func (c *CacheServiceImpl) Del(ctx context.Context, pKey *protobuf.String) (req *protobuf.Response, err error) {
 	key := pKey.Value
-	addr,ok := c.ShouldProcess(key)
+	addr, ok := c.ShouldProcess(key)
 	req = new(protobuf.Response)
-	if !ok{
+	if !ok {
 		req.RedirectDir = addr
-		req.ErrorMsg = fmt.Sprintf("Redirct: %s",addr)
-		return req,nil
+		req.ErrorMsg = fmt.Sprintf("Redirct: %s", addr)
+		return req, nil
 	}
 	err = c.cache.Del(key)
-	if err != nil{
-		req.ErrorMsg = fmt.Sprintf("Err: %s",err)
-	}else {
+	if err != nil {
+		req.ErrorMsg = fmt.Sprintf("Err: %s", err)
+	} else {
 		req.Ok = true
 	}
 	return
 }
 func NewCacheService(n cluster.Node) protobuf.CacheServiceServer {
-	return &CacheServiceImpl{cache.NewKeyValueCache(),n}
+	return &CacheServiceImpl{cache.NewKeyValueCache(), n}
 }
