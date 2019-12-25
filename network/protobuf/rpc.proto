@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package protobuf;
+
+message String {
+    string value = 1;
+}
+
+service CacheService{
+    rpc Get (String) returns (Response);
+    rpc Set (SetParam) returns (Response);
+    rpc Del (String) returns (Response);
+}
+message Response {
+    bool ok = 1;
+    string errorMsg = 2;
+    string value = 3;
+    string redirectDir = 4;
+}
+message SetParam{
+    string key = 1;
+    bytes value = 2;
+}

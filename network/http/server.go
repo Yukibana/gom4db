@@ -15,12 +15,12 @@ type Server struct {
 	cluster.Node
 }
 
-func (s *Server)Listen(){
-	http.Handle("/cluster",&clusterHandler{s})
+func (s *Server) Listen() {
+	http.Handle("/cluster", &clusterHandler{s})
 	_ = http.ListenAndServe(s.Addr()+":12345", nil)
 }
 
-func New(n cluster.Node)*Server{
+func New(n cluster.Node) *Server {
 	return &Server{n}
 }
 
@@ -28,7 +28,7 @@ type clusterHandler struct {
 	*Server
 }
 
-func (h *clusterHandler)ServeHTTP(w http.ResponseWriter,r *http.Request){
+func (h *clusterHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
@@ -42,4 +42,3 @@ func (h *clusterHandler)ServeHTTP(w http.ResponseWriter,r *http.Request){
 	}
 	_, _ = w.Write(b)
 }
-

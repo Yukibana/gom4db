@@ -4,9 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"gom4db/network/cluster"
-	"gom4db/network/gonet"
 	"gom4db/network/http"
-	"gom4db/network/reactor"
+	"gom4db/network/protobuf"
+	"gom4db/network/rpc"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"log"
+	"net"
 	"os"
 )
 
@@ -40,10 +44,17 @@ func main() {
 	if e != nil {
 		panic(e)
 	}
+
 	go http.New(n).Listen()
-	if gnet {
-		reactor.Serve()
-	} else {
-		gonet.New(n).Listen()
+
+	s := grpc.NewServer()
+	protobuf.RegisterCacheServiceServer(s,rpc.NewCacheService(n))
+	listener,err := net.Listen("tcp","0.0.0.0:12347")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	reflection.Register(s)
+	if err := s.Serve(listener); err != nil {
+		log.Fatalf("failed to serve: %v", err)
 	}
 }
